@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0d0b07"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Urban Capital"/>
+<meta name="description" content="Calculadora de potencial de receita para gestão de temporada"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>Urban Capital — Calculadora</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8d5a0;
+    --gold-dark: #8a6520;
+    --bg: #0d0b07;
+    --bg2: #141107;
+    --bg3: #1c1709;
+    --surface: #1f1a0d;
+    --surface2: #2a2210;
+    --border: rgba(201,168,76,0.15);
+    --border2: rgba(201,168,76,0.3);
+    --text: #f0ead8;
+    --text2: #a89c7a;
+    --text3: #6b5f42;
+    --red: #e05c5c;
+    --green: #6dbf8a;
+  }
+
+  html { background: var(--bg); }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,11,7,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 16px 20px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* Scroll container */
+  .scroll { overflow-y: auto; }
+
+  /* Hero */
+  .hero {
+    padding: 32px 20px 24px;
+    border-bottom: 0.5px solid var(--border);
+    background: linear-gradient(180deg, #1c1709 0%, var(--bg) 100%);
+  }
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* Form */
+  .form-wrap { padding: 24px 20px; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: var(--border);
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    margin-bottom: 7px;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 8px;
+    padding: 13px 14px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--gold); }
+  .field input::placeholder { color: var(--text3); }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .field-prefix-wrap { position: relative; }
+  .field-prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--gold);
+    pointer-events: none;
+    font-weight: 500;
+  }
+  .field-prefix-wrap input { padding-left: 40px; }
+
+  /* Range */
+  .range-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .range-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    border: none;
+    padding: 0;
+    outline: none;
+  }
+  .range-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .range-val {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gold);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  /* CTA */
+  .cta-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--gold);
+    color: #0d0b07;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: background 0.2s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cta-btn:active { transform: scale(0.98); background: var(--gold-dark); }
+
+  /* Results */
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .result-hero {
+    background: linear-gradient(180deg, #1c1709 0%, var(--bg) 60%);
+    border-top: 0.5px solid var(--border);
+    padding: 28px 20px 24px;
+  }
+  .result-hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .result-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  /* VS cards */
+  .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 20px; }
+  .vs-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .vs-card.premium {
+    background: #1a1408;
+    border: 1px solid var(--gold);
+  }
+  .vs-lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
+  .vs-card.premium .vs-lbl { color: var(--gold); }
+  .vs-name { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+  .vs-card.premium .vs-name { color: var(--gold-light); }
+  .vs-value { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text); }
+  .vs-card.premium .vs-value { color: var(--gold); }
+  .vs-year { font-size: 10px; color: var(--text3); margin-top: 3px; }
+  .vs-card.premium .vs-year { color: var(--gold-dark); }
+  .vs-arrow { font-size: 18px; color: var(--text3); text-align: center; }
+
+  /* Metric pills */
+  .metric-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+  .metric {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .metric-val { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--gold); font-weight: 600; }
+  .metric-lbl { font-size: 10px; color: var(--text2); margin-top: 4px; line-height: 1.3; }
+
+  /* Plano */
+  .result-section { padding: 0 20px 20px; }
+  .plano-card {
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 16px;
+    background: #120f05;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .plano-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: #0d0b07;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .plano-nome { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--text); }
+  .plano-desc { font-size: 11px; color: var(--text2); margin-top: 5px; line-height: 1.4; }
+  .plano-right { text-align: right; flex-shrink: 0; }
+  .plano-impl-lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); }
+  .plano-impl-val { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); margin: 2px 0; }
+  .plano-com { font-size: 12px; color: var(--gold); }
+
+  /* Sim table */
+  .sim-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .sim-header {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 80px;
+    gap: 0;
+    padding: 10px 14px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--surface2);
+  }
+  .sim-header span {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-align: right;
+  }
+  .sim-header span:first-child { text-align: left; }
+  .sim-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 80px;
+    padding: 10px 14px;
+    border-bottom: 0.5px solid var(--border);
+    align-items: center;
+  }
+  .sim-row:last-child { border-bottom: none; background: #1a1408; }
+  .sim-row span { font-size: 12px; color: var(--text2); text-align: right; }
+  .sim-row span:first-child { text-align: left; color: var(--text); font-size: 12px; }
+  .sim-row span.neg { color: var(--red); }
+  .sim-row span.gold { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 600; }
+  .sim-row.total span:first-child { font-weight: 500; font-size: 12px; }
+
+  /* Footer */
+  .footnote {
+    font-size: 11px;
+    color: var(--text3);
+    font-style: italic;
+    text-align: center;
+    padding: 0 20px 32px;
+    line-height: 1.5;
+  }
+
+  .reset-btn {
+    display: block;
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    padding: 13px;
+    background: transparent;
+    color: var(--text2);
+    border: 0.5px solid var(--border2);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .reset-btn:active { background: var(--surface); }
+
+  .share-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px 16px;
+  }
+  .share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .share-btn:active { transform: scale(0.97); opacity: 0.85; }
+  .share-btn.wpp { background: #25D366; color: #fff; }
+  .share-btn.img { background: var(--surface2); color: var(--gold); border: 0.5px solid var(--border2); }
+  .share-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Card exportável */
+  #export-card {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 390px;
+    background: #0d0b07;
+    padding: 32px 28px;
+    font-family: 'DM Sans', sans-serif;
+    color: #f0ead8;
+  }
+  #export-card .ec-logo { font-family: 'Playfair Display', serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #c9a84c; margin-bottom: 20px; }
+  #export-card .ec-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #f0ead8; margin-bottom: 4px; }
+  #export-card .ec-sub { font-size: 12px; color: #a89c7a; margin-bottom: 24px; }
+  #export-card .ec-divider { height: 0.5px; background: rgba(201,168,76,0.3); margin-bottom: 24px; }
+  #export-card .ec-vs { display: flex; gap: 10px; margin-bottom: 20px; }
+  #export-card .ec-box { flex: 1; border-radius: 8px; padding: 14px; border: 0.5px solid rgba(201,168,76,0.25); background: #1f1a0d; }
+  #export-card .ec-box.gold { background: #1a1408; border: 1px solid #c9a84c; }
+  #export-card .ec-lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #6b5f42; margin-bottom: 4px; }
+  #export-card .ec-box.gold .ec-lbl { color: #c9a84c; }
+  #export-card .ec-val { font-family: 'Playfair Display', serif; font-size: 20px; color: #f0ead8; }
+  #export-card .ec-box.gold .ec-val { color: #c9a84c; }
+  #export-card .ec-yr { font-size: 10px; color: #6b5f42; margin-top: 3px; }
+  #export-card .ec-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  #export-card .ec-metric { background: #1f1a0d; border-radius: 8px; padding: 12px 8px; text-align: center; border: 0.5px solid rgba(201,168,76,0.15); }
+  #export-card .ec-mval { font-family: 'Playfair Display', serif; font-size: 16px; color: #c9a84c; }
+  #export-card .ec-mlbl { font-size: 9px; color: #a89c7a; margin-top: 3px; }
+  #export-card .ec-plano { border: 1px solid #c9a84c; border-radius: 8px; padding: 14px; background: #120f05; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+  #export-card .ec-pnome { font-family: 'Playfair Display', serif; font-size: 16px; color: #f0ead8; }
+  #export-card .ec-pdesc { font-size: 11px; color: #a89c7a; margin-top: 4px; }
+  #export-card .ec-pbadge { display: inline-block; background: #c9a84c; color: #0d0b07; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; margin-bottom: 5px; font-weight: 500; }
+  #export-card .ec-pimpl { font-family: 'Playfair Display', serif; font-size: 17px; color: #f0ead8; }
+  #export-card .ec-pcom { font-size: 11px; color: #c9a84c; margin-top: 3px; }
+  #export-card .ec-footer { font-size: 10px; color: #6b5f42; text-align: center; margin-top: 16px; font-style: italic; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1f1a0d;
+    border: 0.5px solid var(--border2);
+    color: var(--gold);
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .results.show { animation: fadeUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">Urban Capital</div>
+    <div class="header-sub">Gestão de Temporada</div>
+  </div>
+</div>
+
+<div class="scroll" id="mainScroll">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Ferramenta exclusiva</div>
+    <div class="hero-title">Calculadora de<br/><em>Potencial</em> do Imóvel</div>
+    <div class="hero-desc">Descubra quanto seu imóvel pode gerar com gestão profissional de aluguel por temporada.</div>
+  </div>
+
+  <div class="form-wrap" id="formWrap">
+    <div class="section-label">Situação atual</div>
+
+    <div class="field">
+      <label>Modalidade atual do imóvel</label>
+      <select id="modalidade">
+        <option value="tradicional">Aluguel tradicional (contrato fixo)</option>
+        <option value="airbnb">Airbnb / temporada (gerencio eu mesmo)</option>
+        <option value="vazio">Imóvel vazio / desocupado</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Receita mensal atual (R$)</label>
+      <div class="field-prefix-wrap">
+        <span class="field-prefix">R$</span>
+        <input type="number" id="receita_atual" placeholder="2.200" inputmode="numeric"/>
+      </div>
+    </div>
+
+    <div class="section-label">Perfil do imóvel</div>
+
+    <div class="field">
+      <label>Tipo de imóvel</label>
+      <select id="tipo" onchange="ajustarDiaria()">
+        <option value="studio">Studio / Kitnet</option>
+        <option value="apto" selected>Apartamento</option>
+        <option value="casa">Casa</option>
+        <option value="casa_cond">Casa em Condomínio</option>
+      </select>
+    </div>
+
+    <div class="field" id="quartos_field">
+      <label>Número de quartos</label>
+      <select id="quartos" onchange="ajustarDiaria()">
+        <option value="1">1 quarto</option>
+        <option value="2" selected>2 quartos</option>
+        <option value="3">3 quartos</option>
+        <option value="4">4+ quartos</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Estado</label>
+      <select id="estado" onchange="atualizarCidades()">
+        <option value="">Selecione o estado</option>
+        <optgroup label="— Sul">
+          <option value="RS">RS — Rio Grande do Sul</option>
+          <option value="SC">SC — Santa Catarina</option>
+          <option value="PR">PR — Paraná</option>
+        </optgroup>
+        <optgroup label="— Sudeste">
+          <option value="SP">SP — São Paulo</option>
+          <option value="RJ">RJ — Rio de Janeiro</option>
+          <option value="MG">MG — Minas Gerais</option>
+          <option value="ES">ES — Espírito Santo</option>
+        </optgroup>
+        <optgroup label="— Nordeste">
+          <option value="CE">CE — Ceará</option>
+          <option value="PE">PE — Pernambuco</option>
+          <option value="BA">BA — Bahia</option>
+          <option value="RN">RN — Rio Grande do Norte</option>
+          <option value="AL">AL — Alagoas</option>
+          <option value="PB">PB — Paraíba</option>
+          <option value="MA">MA — Maranhão</option>
+          <option value="PI">PI — Piauí</option>
+          <option value="SE">SE — Sergipe</option>
+        </optgroup>
+        <optgroup label="— Centro-Oeste">
+          <option value="DF">DF — Distrito Federal</option>
+          <option value="GO">GO — Goiás</option>
+          <option value="MT">MT — Mato Grosso</option>
+          <option value="MS">MS — Mato Grosso do Sul</option>
+        </optgroup>
+        <optgroup label="— Norte">
+          <option value="AM">AM — Amazonas</option>
+          <option value="PA">PA — Pará</option>
+          <option value="RO">RO — Rondônia</option>
+          <option value="AC">AC — Acre</option>
+          <option value="AP">AP — Amapá</option>
+          <option value="RR">RR — Roraima</option>
+          <option value="TO">TO — Tocantins</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="field" id="cidade_field" style="display:none;">
+      <label>Cidade</label>
+      <select id="regiao" onchange="ajustarDiaria()">
+      </select>
+    </div>
+
+    <div class="section-label">Parâmetros de mercado</div>
+
+    <div class="field">
+      <label>Diária média estimada (R$) <span id="diaria_hint" style="color:var(--gold);font-size:10px;letter-spacing:1px;margin-left:6px;"></span></label>
+      <div class="field-prefix-wrap">
+        <span class="field-prefix">R$</span>
+        <input type="number" id="diaria" value="280" inputmode="numeric"/>
+      </div>
+      <div id="diaria_tip" style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic;"></div>
+    </div>
+
+    <div class="field">
+      <label>Taxa de ocupação esperada <span style="color:var(--gold);font-size:10px;letter-spacing:1px;">✦ média de mercado</span></label>
+      <div class="range-row">
+        <input type="range" id="ocupacao" min="30" max="95" value="65" step="1"
+          oninput="document.getElementById('oc_val').textContent=this.value+'%'"/>
+        <span class="range-val" id="oc_val">65%</span>
+      </div>
+      <div id="oc_tip" style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic;"></div>
+    </div>
+
+    <button class="cta-btn" onclick="calcular()">Calcular potencial →</button>
+  </div>
+
+  <div class="results" id="results">
+
+    <div class="result-hero">
+      <div class="result-hero-eyebrow">Resultado da análise</div>
+      <div class="result-hero-title">Potencial do seu imóvel</div>
+
+      <div class="vs-row">
+        <div class="vs-card">
+          <div class="vs-lbl">Hoje</div>
+          <div class="vs-name" id="r_modal_nome">Aluguel tradicional</div>
+          <div class="vs-value" id="r_atual_mes">R$ 2.200</div>
+          <div class="vs-year" id="r_atual_ano">R$ 26.400/ano</div>
+        </div>
+        <div class="vs-arrow">→</div>
+        <div class="vs-card premium">
+          <div class="vs-lbl">Com Urban Capital</div>
+          <div class="vs-name">Gestão profissional</div>
+          <div class="vs-value" id="r_uc_mes">R$ 5.536</div>
+          <div class="vs-year" id="r_uc_ano">R$ 66.432/ano</div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-val" id="m_ganho">+R$ 3.336</div>
+          <div class="metric-lbl">Ganho extra/mês</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m_cresc">+152%</div>
+          <div class="metric-lbl">Crescimento</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m_dias">237 dias</div>
+          <div class="metric-lbl">Ocupados/ano</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <div class="section-label" style="margin-top:0;">Planos</div>
+
+      <!-- Plano atual: define a implantação a pagar -->
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Plano atual — você paga hoje</div>
+      <div class="plano-card" style="margin-bottom:12px;">
+        <div>
+          <div class="plano-badge">Enquadramento atual</div>
+          <div class="plano-nome" id="p_nome">Plano Dia a Dia</div>
+          <div class="plano-desc" id="p_desc">Baseado no seu faturamento atual.</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px;font-style:italic;" id="p_faixa"></div>
+        </div>
+        <div class="plano-right">
+          <div class="plano-impl-lbl">Implantação única</div>
+          <div class="plano-impl-val" id="p_impl">R$ 5.990</div>
+          <div class="plano-com" id="p_com">20% comissão</div>
+        </div>
+      </div>
+
+      <!-- Plano potencial: onde ele chegará com a Urban Capital -->
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Plano potencial — onde você vai chegar</div>
+      <div class="plano-card" style="border-color:rgba(201,168,76,0.5);background:#1a1408;">
+        <div>
+          <div class="plano-badge" style="background:transparent;border:1px solid var(--gold);color:var(--gold);">Projeção Urban Capital</div>
+          <div class="plano-nome" id="p2_nome" style="color:var(--gold-light);">Plano Feriado</div>
+          <div class="plano-desc" id="p2_desc" style="color:var(--text2);">Com gestão profissional, seu imóvel alcança este patamar.</div>
+          <div style="font-size:10px;color:var(--gold-dark);margin-top:6px;font-style:italic;" id="p2_faixa"></div>
+        </div>
+        <div class="plano-right">
+          <div class="plano-impl-lbl" style="color:var(--gold-dark);">Sem nova implantação</div>
+          <div class="plano-impl-val" id="p2_impl" style="color:var(--gold);">Plano Feriado</div>
+          <div class="plano-com" id="p2_com" style="color:var(--gold);">22% comissão</div>
+        </div>
+      </div>
+
+      <div class="section-label">Simulação financeira mensal</div>
+      <div class="sim-wrap">
+        <div class="sim-header">
+          <span>Item</span>
+          <span>Cons.</span>
+          <span>Médio</span>
+          <span>Otim.</span>
+        </div>
+        <div id="sim_rows"></div>
+      </div>
+    </div>
+
+    <div class="share-row">
+      <button class="share-btn wpp" onclick="compartilharWpp()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.054 23.447a.75.75 0 00.916.99l5.765-1.505A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.9 0-3.7-.497-5.27-1.373l-.378-.215-3.92 1.023 1.004-3.805-.234-.389A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        WhatsApp
+      </button>
+      <button class="share-btn img" onclick="exportarImagem()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Salvar imagem
+      </button>
+    </div>
+
+    <button class="reset-btn" onclick="resetar()">← Nova simulação</button>
+    <div class="footnote">* Taxa de limpeza cobrada do hóspede — não impacta seu lucro líquido.<br/>Projeções baseadas em dados reais de mercado.</div>
+
+  </div>
+</div>
+
+<!-- Card invisível para exportação -->
+<div id="export-card">
+  <div class="ec-logo">Urban Capital — Gestão de Temporada</div>
+  <div class="ec-title">Potencial do seu imóvel</div>
+  <div class="ec-sub" id="ec_sub">Simulação personalizada</div>
+  <div class="ec-divider"></div>
+  <div class="ec-vs">
+    <div class="ec-box">
+      <div class="ec-lbl">Hoje</div>
+      <div class="ec-val" id="ec_atual">R$ 2.200</div>
+      <div class="ec-yr" id="ec_atual_ano">R$ 26.400/ano</div>
+    </div>
+    <div class="ec-box gold">
+      <div class="ec-lbl">Com Urban Capital</div>
+      <div class="ec-val" id="ec_uc">R$ 5.536</div>
+      <div class="ec-yr" id="ec_uc_ano">R$ 66.432/ano</div>
+    </div>
+  </div>
+  <div class="ec-metrics">
+    <div class="ec-metric"><div class="ec-mval" id="ec_ganho">+R$ 3.336</div><div class="ec-mlbl">Ganho extra/mês</div></div>
+    <div class="ec-metric"><div class="ec-mval" id="ec_cresc">+152%</div><div class="ec-mlbl">Crescimento</div></div>
+    <div class="ec-metric"><div class="ec-mval" id="ec_dias">237 dias</div><div class="ec-mlbl">Ocupados/ano</div></div>
+  </div>
+  <div class="ec-plano">
+    <div>
+      <div class="ec-pbadge">Recomendado</div>
+      <div class="ec-pnome" id="ec_pnome">Plano Feriado</div>
+      <div class="ec-pdesc" id="ec_pdesc">Foco em localizações com picos sazonais.</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="ec-pimpl" id="ec_pimpl">R$ 7.990</div>
+      <div class="ec-pcom" id="ec_pcom">22% comissão</div>
+    </div>
+  </div>
+  <div class="ec-footer">Simulação gerada pela Urban Capital · urbancapital.com.br</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// ============================================================
+// DADOS DE MERCADO — Fontes: Airbtics, AirDNA, HostnJoy/MySide
+// Última atualização: 2024-2025
+// ============================================================
+
+// Taxas de ocupação — média de 3 fontes por cidade
+// f1=Airbtics · f2=AirDNA/HostnJoy · f3=MySide/AirROI
+const ocupacoes = {
+  // Sudeste
+  sao_paulo:       { f1:63, f2:63, f3:45, media:57, fontes:'Airbtics 63% · HostnJoy 63% · AirDNA 45%' },
+  rio:             { f1:61, f2:44, f3:44, media:50, fontes:'Airbtics 61% · AirDNA 44% · HostnJoy 44%' },
+  belo_horizonte:  { f1:44, f2:46, f3:44, media:45, fontes:'Airbtics 44% · AirDNA 46% · HostnJoy 44%' },
+  niteroi:         { f1:70, f2:65, f3:68, media:68, fontes:'MySide 70% · AirDNA 65% · Airbtics 68%' },
+  vitoria:         { f1:55, f2:52, f3:54, media:54, fontes:'Airbtics 55% · AirDNA 52% · MySide 54%' },
+  // Sul
+  florianopolis:   { f1:57, f2:57, f3:60, media:58, fontes:'Airbtics 57% · HostnJoy 57% · MySide 60%' },
+  curitiba:        { f1:64, f2:62, f3:60, media:62, fontes:'Airbtics 64% · AirDNA 62% · MySide 60%' },
+  porto_alegre:    { f1:58, f2:55, f3:57, media:57, fontes:'Airbtics 58% · AirDNA 55% · MySide 57%' },
+  gramado:         { f1:65, f2:68, f3:65, media:66, fontes:'HostnJoy 65% · AirDNA 68% · MySide 65%' },
+  balneario:       { f1:62, f2:60, f3:65, media:62, fontes:'MySide 62% · AirDNA 60% · Airbtics 65%' },
+  itapema:         { f1:65, f2:63, f3:68, media:65, fontes:'MySide 65% · AirDNA 63% · Airbtics 68%' },
+  // Centro-Oeste
+  brasilia:        { f1:67, f2:63, f3:63, media:64, fontes:'Airbtics 67% · AirDNA 63% · HostnJoy 63%' },
+  goiania:         { f1:52, f2:50, f3:53, media:52, fontes:'Airbtics 52% · AirDNA 50% · MySide 53%' },
+  // Nordeste
+  fortaleza:       { f1:55, f2:58, f3:60, media:58, fontes:'Airbtics 55% · AirDNA 58% · MySide 60%' },
+  salvador:        { f1:55, f2:55, f3:58, media:56, fontes:'Airbtics 55% · HostnJoy 55% · MySide 58%' },
+  recife:          { f1:59, f2:58, f3:58, media:58, fontes:'Airbtics 59% · AirDNA 58% · MySide 58%' },
+  natal:           { f1:55, f2:53, f3:56, media:55, fontes:'Airbtics 55% · AirDNA 53% · MySide 56%' },
+  maceio:          { f1:60, f2:58, f3:62, media:60, fontes:'MySide 60% · AirDNA 58% · Airbtics 62%' },
+  joao_pessoa:     { f1:53, f2:52, f3:54, media:53, fontes:'Airbtics 53% · AirDNA 52% · MySide 54%' },
+  sao_luis:        { f1:50, f2:48, f3:52, media:50, fontes:'Airbtics 50% · AirDNA 48% · MySide 52%' },
+  // Norte
+  manaus:          { f1:50, f2:48, f3:52, media:50, fontes:'Airbtics 50% · AirDNA 48% · MySide 52%' },
+  belem:           { f1:50, f2:48, f3:50, media:49, fontes:'Airbtics 50% · AirDNA 48% · MySide 50%' },
+  // Litorais / destinos turísticos
+  guaruja:         { f1:55, f2:58, f3:60, media:58, fontes:'MySide 55% · AirDNA 58% · Airbtics 60%' },
+  foz_iguacu:      { f1:48, f2:50, f3:52, media:50, fontes:'Airbtics 48% · AirDNA 50% · MySide 52%' },
+  outras:          { f1:50, f2:53, f3:53, media:52, fontes:'Referência geral mercado brasileiro' },
+  caxias_sul:      { f1:58, f2:55, f3:57, media:57, fontes:'Airbtics 58% · AirDNA 55% · MySide 57%' },
+  bento_goncalves: { f1:62, f2:60, f3:63, media:62, fontes:'Airbtics 62% · AirDNA 60% · MySide 63%' },
+  matinhos:        { f1:60, f2:58, f3:62, media:60, fontes:'MySide 60% · AirDNA 58% · Airbtics 62%' },
+  campos_jordao:   { f1:68, f2:65, f3:70, media:68, fontes:'Airbtics 68% · AirDNA 65% · MySide 70%' },
+  ubatuba:         { f1:65, f2:63, f3:67, media:65, fontes:'Airbtics 65% · AirDNA 63% · MySide 67%' },
+  buzios:          { f1:72, f2:70, f3:74, media:72, fontes:'Airbtics 72% · AirDNA 70% · MySide 74%' },
+  angra:           { f1:68, f2:65, f3:70, media:68, fontes:'Airbtics 68% · AirDNA 65% · MySide 70%' },
+  ouro_preto:      { f1:65, f2:62, f3:67, media:65, fontes:'Airbtics 65% · AirDNA 62% · MySide 67%' },
+  tiradentes:      { f1:70, f2:68, f3:72, media:70, fontes:'Airbtics 70% · AirDNA 68% · MySide 72%' },
+  guarapari:       { f1:62, f2:60, f3:64, media:62, fontes:'Airbtics 62% · AirDNA 60% · MySide 64%' },
+  jericoacoara:    { f1:75, f2:73, f3:77, media:75, fontes:'Airbtics 75% · AirDNA 73% · MySide 77%' },
+  porto_galinhas:  { f1:73, f2:71, f3:75, media:73, fontes:'Airbtics 73% · AirDNA 71% · MySide 75%' },
+  porto_seguro:    { f1:65, f2:63, f3:67, media:65, fontes:'Airbtics 65% · AirDNA 63% · MySide 67%' },
+  morro_sao_paulo: { f1:72, f2:70, f3:74, media:72, fontes:'Airbtics 72% · AirDNA 70% · MySide 74%' },
+  pipa:            { f1:70, f2:68, f3:72, media:70, fontes:'Airbtics 70% · AirDNA 68% · MySide 72%' },
+  maragogi:        { f1:68, f2:66, f3:70, media:68, fontes:'Airbtics 68% · AirDNA 66% · MySide 70%' },
+  caldas_novas:    { f1:65, f2:63, f3:67, media:65, fontes:'Airbtics 65% · AirDNA 63% · MySide 67%' },
+  cuiaba:          { f1:50, f2:48, f3:52, media:50, fontes:'Airbtics 50% · AirDNA 48% · MySide 52%' },
+  chapada:         { f1:68, f2:66, f3:70, media:68, fontes:'Airbtics 68% · AirDNA 66% · MySide 70%' },
+  campo_grande:    { f1:52, f2:50, f3:54, media:52, fontes:'Airbtics 52% · AirDNA 50% · MySide 54%' },
+  bonito:          { f1:70, f2:68, f3:72, media:70, fontes:'Airbtics 70% · AirDNA 68% · MySide 72%' },
+  teresina:        { f1:48, f2:46, f3:50, media:48, fontes:'Airbtics 48% · AirDNA 46% · MySide 50%' },
+  aracaju:         { f1:55, f2:53, f3:57, media:55, fontes:'Airbtics 55% · AirDNA 53% · MySide 57%' }
+};
+
+// Diárias médias — Airbtics/AirDNA 2024-2025 (R$)
+// Estrutura: cidade → tipo → [0, 1q, 2q, 3q, 4q+]
+const diarias = {
+  sao_paulo:      { studio:180, apto:[0,220,290,380,500], casa:[0,260,340,460,600], casa_cond:[0,280,370,500,650] },
+  rio:            { studio:220, apto:[0,260,342,460,600], casa:[0,300,420,560,720], casa_cond:[0,320,450,600,780] },
+  belo_horizonte: { studio:160, apto:[0,190,250,330,430], casa:[0,230,310,420,540], casa_cond:[0,250,330,450,580] },
+  niteroi:        { studio:200, apto:[0,250,330,440,570], casa:[0,290,390,520,670], casa_cond:[0,310,410,550,710] },
+  vitoria:        { studio:160, apto:[0,190,250,330,430], casa:[0,230,310,420,540], casa_cond:[0,250,330,450,580] },
+  florianopolis:  { studio:210, apto:[0,260,350,460,600], casa:[0,300,420,580,750], casa_cond:[0,320,450,620,800] },
+  curitiba:       { studio:160, apto:[0,190,240,320,420], casa:[0,230,310,420,540], casa_cond:[0,250,330,450,580] },
+  porto_alegre:   { studio:150, apto:[0,180,230,310,400], casa:[0,220,300,400,520], casa_cond:[0,240,320,430,560] },
+  gramado:        { studio:250, apto:[0,300,400,520,680], casa:[0,380,500,680,880], casa_cond:[0,400,540,720,940] },
+  balneario:      { studio:220, apto:[0,270,360,480,620], casa:[0,330,440,590,770], casa_cond:[0,350,470,630,820] },
+  itapema:        { studio:210, apto:[0,260,345,460,600], casa:[0,310,420,570,740], casa_cond:[0,330,450,610,790] },
+  brasilia:       { studio:150, apto:[0,180,214,280,370], casa:[0,220,300,400,520], casa_cond:[0,240,320,430,560] },
+  goiania:        { studio:140, apto:[0,170,210,280,360], casa:[0,210,280,380,490], casa_cond:[0,230,300,400,520] },
+  fortaleza:      { studio:170, apto:[0,200,260,350,460], casa:[0,250,340,460,590], casa_cond:[0,270,360,490,630] },
+  salvador:       { studio:160, apto:[0,195,255,340,445], casa:[0,240,330,450,580], casa_cond:[0,260,350,470,610] },
+  recife:         { studio:170, apto:[0,200,265,355,460], casa:[0,250,340,460,590], casa_cond:[0,270,360,490,630] },
+  natal:          { studio:160, apto:[0,190,250,335,430], casa:[0,240,320,440,570], casa_cond:[0,260,345,465,600] },
+  maceio:         { studio:170, apto:[0,200,265,355,460], casa:[0,250,340,460,590], casa_cond:[0,270,360,490,630] },
+  joao_pessoa:    { studio:150, apto:[0,180,235,315,410], casa:[0,220,300,410,530], casa_cond:[0,240,320,430,560] },
+  sao_luis:       { studio:140, apto:[0,165,215,290,375], casa:[0,200,275,370,480], casa_cond:[0,220,295,395,510] },
+  manaus:         { studio:140, apto:[0,165,210,280,365], casa:[0,200,270,365,470], casa_cond:[0,220,290,390,500] },
+  belem:          { studio:140, apto:[0,165,210,280,365], casa:[0,200,270,365,470], casa_cond:[0,220,290,390,500] },
+  guaruja:        { studio:210, apto:[0,250,320,430,560], casa:[0,300,400,540,700], casa_cond:[0,320,430,580,750] },
+  foz_iguacu:     { studio:150, apto:[0,180,230,310,400], casa:[0,220,300,400,520], casa_cond:[0,240,320,430,560] },
+  outras:         { studio:150, apto:[0,180,240,320,420], casa:[0,220,300,400,520], casa_cond:[0,240,320,430,560] },
+  // RS
+  caxias_sul:     { studio:150, apto:[0,180,230,310,400], casa:[0,220,300,400,520], casa_cond:[0,240,320,430,560] },
+  bento_goncalves:{ studio:170, apto:[0,200,265,355,460], casa:[0,250,340,460,590], casa_cond:[0,270,360,490,630] },
+  // PR
+  matinhos:       { studio:180, apto:[0,220,290,390,500], casa:[0,270,360,490,630], casa_cond:[0,290,380,520,670] },
+  // SP
+  campos_jordao:  { studio:250, apto:[0,300,400,530,690], casa:[0,370,500,670,870], casa_cond:[0,390,530,710,920] },
+  ubatuba:        { studio:200, apto:[0,240,320,430,560], casa:[0,290,390,530,680], casa_cond:[0,310,420,560,730] },
+  // RJ
+  buzios:         { studio:280, apto:[0,340,450,600,780], casa:[0,420,560,760,980], casa_cond:[0,450,600,810,1050] },
+  angra:          { studio:260, apto:[0,310,420,560,720], casa:[0,390,520,710,920], casa_cond:[0,420,560,760,980] },
+  // MG
+  ouro_preto:     { studio:200, apto:[0,240,320,430,560], casa:[0,290,390,520,680], casa_cond:[0,310,420,560,730] },
+  tiradentes:     { studio:220, apto:[0,270,360,480,620], casa:[0,330,440,590,770], casa_cond:[0,350,470,630,820] },
+  // ES
+  guarapari:      { studio:190, apto:[0,230,305,410,530], casa:[0,280,380,510,660], casa_cond:[0,300,400,540,700] },
+  // CE
+  jericoacoara:   { studio:300, apto:[0,370,490,650,850], casa:[0,450,600,820,1060], casa_cond:[0,480,640,870,1130] },
+  // PE
+  porto_galinhas: { studio:290, apto:[0,350,470,620,810], casa:[0,430,580,790,1020], casa_cond:[0,460,620,840,1090] },
+  // BA
+  porto_seguro:   { studio:220, apto:[0,260,350,460,600], casa:[0,320,430,580,750], casa_cond:[0,340,460,620,800] },
+  morro_sao_paulo:{ studio:280, apto:[0,340,450,600,780], casa:[0,410,550,750,970], casa_cond:[0,440,590,800,1040] },
+  // RN
+  pipa:           { studio:260, apto:[0,310,420,560,720], casa:[0,390,520,700,910], casa_cond:[0,410,550,750,970] },
+  // AL
+  maragogi:       { studio:250, apto:[0,300,400,530,690], casa:[0,370,490,670,870], casa_cond:[0,390,520,710,920] },
+  // GO
+  caldas_novas:   { studio:170, apto:[0,200,265,355,460], casa:[0,250,335,455,590], casa_cond:[0,270,360,490,630] },
+  // MT
+  cuiaba:         { studio:140, apto:[0,165,215,290,375], casa:[0,200,270,365,475], casa_cond:[0,220,295,395,510] },
+  chapada:        { studio:230, apto:[0,280,370,500,650], casa:[0,340,460,620,800], casa_cond:[0,360,490,660,860] },
+  // MS
+  campo_grande:   { studio:140, apto:[0,165,215,290,375], casa:[0,200,270,365,475], casa_cond:[0,220,295,395,510] },
+  bonito:         { studio:240, apto:[0,290,390,520,670], casa:[0,360,480,650,840], casa_cond:[0,380,510,690,900] },
+  // PI
+  teresina:       { studio:130, apto:[0,155,200,270,350], casa:[0,185,250,340,440], casa_cond:[0,200,270,365,470] },
+  // SE
+  aracaju:        { studio:150, apto:[0,180,235,315,410], casa:[0,220,295,400,520], casa_cond:[0,235,315,430,560] },
+  // GO
+  goiania:        { studio:140, apto:[0,170,210,280,360], casa:[0,210,280,380,490], casa_cond:[0,230,300,400,520] },
+};
+
+const cidadeLabel = {
+  sao_paulo:'São Paulo', rio:'Rio de Janeiro', belo_horizonte:'Belo Horizonte',
+  niteroi:'Niterói', vitoria:'Vitória', florianopolis:'Florianópolis',
+  curitiba:'Curitiba', porto_alegre:'Porto Alegre', gramado:'Gramado',
+  balneario:'Balneário Camboriú', itapema:'Itapema', brasilia:'Brasília',
+  goiania:'Goiânia', fortaleza:'Fortaleza', salvador:'Salvador',
+  recife:'Recife', natal:'Natal', maceio:'Maceió', joao_pessoa:'João Pessoa',
+  sao_luis:'São Luís', manaus:'Manaus', belem:'Belém',
+  guaruja:'Guarujá', foz_iguacu:'Foz do Iguaçu',
+  caxias_sul:'Caxias do Sul', bento_goncalves:'Bento Gonçalves',
+  matinhos:'Matinhos', campos_jordao:'Campos do Jordão', ubatuba:'Ubatuba',
+  buzios:'Búzios', angra:'Angra dos Reis', ouro_preto:'Ouro Preto',
+  tiradentes:'Tiradentes', guarapari:'Guarapari', jericoacoara:'Jericoacoara',
+  porto_galinhas:'Porto de Galinhas', porto_seguro:'Porto Seguro',
+  morro_sao_paulo:'Morro de São Paulo', pipa:'Pipa', maragogi:'Maragogi',
+  caldas_novas:'Caldas Novas', cuiaba:'Cuiabá', chapada:'Chapada dos Guimarães',
+  campo_grande:'Campo Grande', bonito:'Bonito', teresina:'Teresina',
+  aracaju:'Aracaju', outras:'outra cidade'
+};
+
+const tipoLabel = { studio:'Studio/Kitnet', apto:'Apartamento', casa:'Casa', casa_cond:'Casa em Condomínio' };
+
+function ajustarDiaria(){
+  const tipo = document.getElementById('tipo').value;
+  const regiao = document.getElementById('regiao').value;
+  const quartos = parseInt(document.getElementById('quartos').value);
+
+  // Studio não tem campo de quartos — esconde
+  const quartosField = document.getElementById('quartos_field');
+  if(tipo === 'studio'){
+    quartosField.style.display = 'none';
+  } else {
+    quartosField.style.display = 'block';
+  }
+
+  // Ajusta diária
+  const dadosCidade = diarias[regiao];
+  let sugerida;
+  if(tipo === 'studio'){
+    sugerida = dadosCidade.studio;
+  } else {
+    sugerida = dadosCidade[tipo][quartos] || dadosCidade[tipo][2];
+  }
+  document.getElementById('diaria').value = sugerida;
+
+  // Ajusta ocupação com média real de 3 fontes
+  const oc = ocupacoes[regiao];
+  document.getElementById('ocupacao').value = oc.media;
+  document.getElementById('oc_val').textContent = oc.media + '%';
+
+  // Hints
+  document.getElementById('diaria_hint').textContent = '✦ dado real de mercado';
+  const qLabel = tipo === 'studio' ? '' : ' · '+quartos+(quartos>=4?'+':'')+' quarto'+(quartos>1?'s':'');
+  document.getElementById('diaria_tip').textContent =
+    tipoLabel[tipo] + qLabel + ' em ' + cidadeLabel[regiao] + ' — mediana Airbtics/AirDNA 2025. Ajuste se necessário.';
+
+  // Tooltip ocupação
+  const ocTip = document.getElementById('oc_tip');
+  if(ocTip){
+    ocTip.textContent = 'Média de 3 fontes para ' + cidadeLabel[regiao] + ': ' + oc.fontes;
+  }
+}
+
+// Cidades com maiores taxas de ocupação por estado
+const cidadesPorEstado = {
+  RS: [ ['gramado','Gramado'], ['caxias_sul','Caxias do Sul'], ['porto_alegre','Porto Alegre'], ['bento_goncalves','Bento Gonçalves'], ['outras','Outra cidade'] ],
+  SC: [ ['florianopolis','Florianópolis'], ['balneario','Balneário Camboriú'], ['itapema','Itapema'], ['bombinhas','Bombinhas'], ['outras','Outra cidade'] ],
+  PR: [ ['curitiba','Curitiba'], ['foz_iguacu','Foz do Iguaçu'], ['matinhos','Matinhos / Litoral'], ['outras','Outra cidade'] ],
+  SP: [ ['sao_paulo','São Paulo'], ['guaruja','Guarujá'], ['campos_jordao','Campos do Jordão'], ['ubatuba','Ubatuba'], ['outras','Outra cidade'] ],
+  RJ: [ ['rio','Rio de Janeiro'], ['niteroi','Niterói'], ['buzios','Búzios'], ['angra','Angra dos Reis'], ['outras','Outra cidade'] ],
+  MG: [ ['belo_horizonte','Belo Horizonte'], ['ouro_preto','Ouro Preto'], ['tiradentes','Tiradentes'], ['outras','Outra cidade'] ],
+  ES: [ ['vitoria','Vitória'], ['guarapari','Guarapari'], ['outras','Outra cidade'] ],
+  CE: [ ['fortaleza','Fortaleza'], ['jericoacoara','Jericoacoara'], ['outras','Outra cidade'] ],
+  PE: [ ['recife','Recife'], ['porto_galinhas','Porto de Galinhas'], ['outras','Outra cidade'] ],
+  BA: [ ['salvador','Salvador'], ['porto_seguro','Porto Seguro'], ['morro_sao_paulo','Morro de São Paulo'], ['outras','Outra cidade'] ],
+  RN: [ ['natal','Natal'], ['pipa','Pipa'], ['outras','Outra cidade'] ],
+  AL: [ ['maceio','Maceió'], ['maragogi','Maragogi'], ['outras','Outra cidade'] ],
+  PB: [ ['joao_pessoa','João Pessoa'], ['outras','Outra cidade'] ],
+  MA: [ ['sao_luis','São Luís'], ['outras','Outra cidade'] ],
+  PI: [ ['teresina','Teresina'], ['outras','Outra cidade'] ],
+  SE: [ ['aracaju','Aracaju'], ['outras','Outra cidade'] ],
+  DF: [ ['brasilia','Brasília'] ],
+  GO: [ ['goiania','Goiânia'], ['caldas_novas','Caldas Novas'], ['outras','Outra cidade'] ],
+  MT: [ ['cuiaba','Cuiabá'], ['chapada','Chapada dos Guimarães'], ['outras','Outra cidade'] ],
+  MS: [ ['campo_grande','Campo Grande'], ['bonito','Bonito'], ['outras','Outra cidade'] ],
+  AM: [ ['manaus','Manaus'], ['outras','Outra cidade'] ],
+  PA: [ ['belem','Belém'], ['outras','Outra cidade'] ],
+  RO: [ ['outras','Outra cidade'] ],
+  AC: [ ['outras','Outra cidade'] ],
+  AP: [ ['outras','Outra cidade'] ],
+  RR: [ ['outras','Outra cidade'] ],
+  TO: [ ['outras','Outra cidade'] ],
+};
+
+function atualizarCidades(){
+  const estado = document.getElementById('estado').value;
+  const cidadeField = document.getElementById('cidade_field');
+  const sel = document.getElementById('regiao');
+  if(!estado){ cidadeField.style.display='none'; return; }
+  const cidades = cidadesPorEstado[estado] || [['outras','Outra cidade']];
+  sel.innerHTML = cidades.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+  cidadeField.style.display = 'block';
+  ajustarDiaria();
+}
+
+// ── Planos ──
+const planos = {
+  dia:      { nome:'Plano Dia a Dia', impl:5990,  com:0.20, desc:'Ideal para regiões com demanda estável e ocupação constante.' },
+  feriado:  { nome:'Plano Feriado',   impl:7990,  com:0.22, desc:'Foco em localizações com picos sazonais e alta valorização.' },
+  favorito: { nome:'Plano Favorito',  impl:10990, com:0.25, desc:'Gestão premium para ativos em regiões de altíssima demanda.' }
+};
+
+const modalNomes = { tradicional:'Aluguel tradicional', airbnb:'Airbnb autônomo', vazio:'Imóvel vazio' };
+
+function fmt(v){ return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+
+let _ultimo = {};
+
+function getPlano(fatMes){
+  if(fatMes > 9000) return { key:'favorito', p: planos.favorito };
+  if(fatMes > 5000) return { key:'feriado',  p: planos.feriado  };
+  return                    { key:'dia',      p: planos.dia      };
+}
+
+function calcular(){
+  const modalidade  = document.getElementById('modalidade').value;
+  const receitaAtual = parseFloat(document.getElementById('receita_atual').value) || 0;
+  const diaria      = parseFloat(document.getElementById('diaria').value) || 280;
+  const ocupacao    = parseInt(document.getElementById('ocupacao').value) / 100;
+
+  // Faturamento atual do cliente (define o plano e a implantação)
+  const fatAtualMes = receitaAtual;
+  const fatAtualAno = fatAtualMes * 12;
+
+  // Projeção COM Urban Capital
+  const diasAno         = Math.round(365 * ocupacao);
+  const fatPotMes       = (diaria * 365 * ocupacao) / 12;
+  const fatPotCons      = fatPotMes * 0.90;
+  const fatPotOtim      = fatPotMes * 1.18;
+
+  // Plano ATUAL → define implantação que o cliente paga hoje
+  const { key: keyAtual, p: pAtual } = getPlano(fatAtualMes);
+
+  // Plano POTENCIAL → onde ele vai chegar com a Urban Capital
+  const { key: keyPot, p: pPot } = getPlano(fatPotMes);
+
+  // Lucro líquido usa comissão do plano ATUAL
+  const lucro = f => f - f*0.03 - f*pAtual.com - 600;
+  const lCons  = lucro(fatPotCons);
+  const lMedio = lucro(fatPotMes);
+  const lOtim  = lucro(fatPotOtim);
+
+  const ganho = lMedio - receitaAtual;
+  const cresc = receitaAtual > 0 ? Math.round(((lMedio - receitaAtual) / receitaAtual) * 100) : null;
+
+  _ultimo = { modalidade, receitaAtual, fatAtualAno, diasAno,
+              fatMes: fatPotMes, lMedio, lOtim, lCons, ganho, cresc,
+              pAtual, pPot, cons: fatPotCons, otim: fatPotOtim };
+
+  // Painel comparativo
+  document.getElementById('r_modal_nome').textContent = modalNomes[modalidade];
+  document.getElementById('r_atual_mes').textContent  = receitaAtual > 0 ? fmt(receitaAtual) : 'R$ 0';
+  document.getElementById('r_atual_ano').textContent  = fmt(fatAtualAno) + '/ano';
+  document.getElementById('r_uc_mes').textContent     = fmt(lMedio);
+  document.getElementById('r_uc_ano').textContent     = fmt(lMedio * 12) + '/ano';
+  document.getElementById('m_ganho').textContent      = (ganho >= 0 ? '+' : '') + fmt(ganho);
+  document.getElementById('m_cresc').textContent      = cresc !== null ? (cresc >= 0 ? '+' : '') + cresc + '%' : '—';
+  document.getElementById('m_dias').textContent       = diasAno + ' dias';
+
+  // Plano ATUAL
+  document.getElementById('p_nome').textContent  = pAtual.nome;
+  document.getElementById('p_desc').textContent  = 'Baseado no seu faturamento atual de ' + fmt(fatAtualMes) + '/mês.';
+  document.getElementById('p_impl').textContent  = fmt(pAtual.impl);
+  document.getElementById('p_com').textContent   = (pAtual.com * 100) + '% comissão';
+  document.getElementById('p_faixa').textContent = keyAtual === 'dia'
+    ? 'Faturamento atual até R$ 5.000/mês'
+    : keyAtual === 'feriado'
+    ? 'Faturamento atual de R$ 5.001 a R$ 9.000/mês'
+    : 'Faturamento atual acima de R$ 9.000/mês';
+
+  // Plano POTENCIAL
+  document.getElementById('p2_nome').textContent  = pPot.nome;
+  document.getElementById('p2_desc').textContent  = 'Com nossa gestão, seu imóvel pode alcançar este patamar.';
+  document.getElementById('p2_impl').textContent  = 'Sem nova implantação';
+  document.getElementById('p2_com').textContent   = (pPot.com * 100) + '% comissão';
+  document.getElementById('p2_faixa').textContent = keyPot === 'dia'
+    ? 'Projeção: até R$ 5.000/mês'
+    : keyPot === 'feriado'
+    ? 'Projeção: R$ 5.001 – R$ 9.000/mês'
+    : 'Projeção: acima de R$ 9.000/mês';
+
+  // Simulação financeira
+  const row  = (label,c,m,o,tot) => `<div class="sim-row${tot?' total':''}"><span>${label}</span><span class="${tot?'gold':''}">${fmt(c)}</span><span class="${tot?'gold':''}">${fmt(m)}</span><span class="${tot?'gold':''}">${fmt(o)}</span></div>`;
+  const rowN = (label,c,m,o)     => `<div class="sim-row"><span>${label}</span><span class="neg">–${fmt(c)}</span><span class="neg">–${fmt(m)}</span><span class="neg">–${fmt(o)}</span></div>`;
+
+  document.getElementById('sim_rows').innerHTML =
+    row ('Faturamento bruto',                   fatPotCons,         fatPotMes,         fatPotOtim,         false) +
+    rowN('Taxa plataforma (3%)',                 fatPotCons*0.03,    fatPotMes*0.03,    fatPotOtim*0.03         ) +
+    rowN('Comissão ('+Math.round(pAtual.com*100)+'%)', fatPotCons*pAtual.com, fatPotMes*pAtual.com, fatPotOtim*pAtual.com) +
+    rowN('Custos operacionais',                 600,                600,               600                     ) +
+    row ('Lucro líquido',                       lCons,              lMedio,            lOtim,              true);
+
+  preencherExportCard();
+
+  const res = document.getElementById('results');
+  res.classList.add('show');
+  setTimeout(() => res.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+function preencherExportCard(){
+  const d = _ultimo;
+  if(!d.fatMes) return;
+  const tipo    = document.getElementById('tipo').value;
+  const qLabel  = tipo === 'studio' ? '' : ' · ' + document.getElementById('quartos').value + 'q';
+  document.getElementById('ec_sub').textContent      = tipoLabel[tipo] + qLabel + ' — ' + (modalNomes[d.modalidade]||'') + ' → Gestão profissional';
+  document.getElementById('ec_atual').textContent    = d.receitaAtual > 0 ? fmt(d.receitaAtual) : 'R$ 0';
+  document.getElementById('ec_atual_ano').textContent= fmt(d.receitaAtual * 12) + '/ano';
+  document.getElementById('ec_uc').textContent       = fmt(d.lMedio);
+  document.getElementById('ec_uc_ano').textContent   = fmt(d.lMedio * 12) + '/ano';
+  document.getElementById('ec_ganho').textContent    = (d.ganho >= 0 ? '+' : '') + fmt(d.ganho);
+  document.getElementById('ec_cresc').textContent    = d.cresc !== null ? (d.cresc >= 0 ? '+' : '') + d.cresc + '%' : '—';
+  document.getElementById('ec_dias').textContent     = d.diasAno + ' dias';
+  document.getElementById('ec_pnome').textContent    = d.pAtual.nome;
+  document.getElementById('ec_pdesc').textContent    = d.pAtual.desc;
+  document.getElementById('ec_pimpl').textContent    = fmt(d.pAtual.impl);
+  document.getElementById('ec_pcom').textContent     = (d.pAtual.com * 100) + '% comissão';
+}
+
+function compartilharWpp(){
+  const d = _ultimo;
+  if(!d.fatMes){ showToast('Calcule primeiro!'); return; }
+  const txt =
+`🏡 *Urban Capital — Análise de Potencial*
+
+📊 *Situação atual (${modalNomes[d.modalidade]}):*
+${d.receitaAtual > 0 ? fmt(d.receitaAtual)+'/mês' : 'Imóvel sem receita'}
+
+✨ *Com gestão profissional Urban Capital:*
+• Lucro líquido estimado: *${fmt(d.lMedio)}/mês*
+• Receita anual: *${fmt(d.lMedio*12)}*
+• Dias ocupados: ~${d.diasAno} dias/ano
+
+📈 *Ganho extra mensal: ${(d.ganho>=0?'+':'')+fmt(d.ganho)}*
+${d.cresc!==null ? '📊 Crescimento: '+(d.cresc>=0?'+':'')+d.cresc+'%\n' : ''}
+🏆 Plano contratado: *${d.pAtual.nome}* (implantação ${fmt(d.pAtual.impl)})
+🚀 Plano potencial: *${d.pPot.nome}* (sem nova implantação)
+
+_Projeções baseadas em dados reais de mercado._`;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+}
+
+function exportarImagem(){
+  const d = _ultimo;
+  if(!d.fatMes){ showToast('Calcule primeiro!'); return; }
+  showToast('Gerando imagem...');
+  const card = document.getElementById('export-card');
+  html2canvas(card, { backgroundColor:'#0d0b07', scale:2, useCORS:true, logging:false })
+    .then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'urban-capital-simulacao.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Imagem salva!');
+    }).catch(() => showToast('Erro ao gerar imagem'));
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function resetar(){
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('formWrap').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
